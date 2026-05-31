@@ -9,6 +9,15 @@ source_dir="${repo_root}/src/lvgl"
 build_dir="${repo_root}/build/host_macos"
 dist_dir="${repo_root}/dist/lvgl/host_macos"
 
+if ! command -v sdl2-config >/dev/null 2>&1; then
+  echo "sdl2-config not found. Install SDL2 with: brew install sdl2" >&2
+  exit 1
+fi
+
+sdl2_version="$(sdl2-config --version)"
+sdl2_cflags="$(sdl2-config --cflags)"
+sdl2_libs="$(sdl2-config --libs)"
+
 mkdir -p "${repo_root}/src"
 
 if [ ! -d "${source_dir}/.git" ]; then
@@ -55,8 +64,13 @@ lvgl.version=9.1.0
 lvgl.tag=${lvgl_tag}
 lvgl.commit=${lvgl_commit}
 platform=host_macos
+display_backend=sdl2
+input_backend=sdl2
 toolchain=${toolchain}
 arch=${arch}
+sdl2.version=${sdl2_version}
+sdl2.cflags=${sdl2_cflags}
+sdl2.libs=${sdl2_libs}
 lv_conf_hash=${conf_hash}
 lib_hash=${lib_hash}
 EOF
