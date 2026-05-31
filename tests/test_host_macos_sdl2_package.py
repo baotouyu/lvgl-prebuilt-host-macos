@@ -76,7 +76,7 @@ def test_verify_script_compiles_sdl2_demo_and_runs_only_when_requested():
     assert "host_macos_sdl2_demo" in script
     assert "verify_widgets_demo.c" in script
     assert '#include "demos/widgets/lv_demo_widgets.h"' in script
-    assert "lv_demo_widgets();" in script
+    assert "(void)lv_demo_widgets;" in script
     assert '"${dist_dir}/lib/liblvgl_demos.a"' in script
 
 

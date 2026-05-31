@@ -35,15 +35,16 @@ cmake -S "${repo_root}" -B "${build_dir}" \
   -DCMAKE_OSX_ARCHITECTURES="$(uname -m)" \
   -DLV_CONF_PATH="${repo_root}/config/host_macos/lv_conf.h" \
   -DLV_CONF_BUILD_DISABLE_EXAMPLES=ON \
-  -DLV_CONF_BUILD_DISABLE_DEMOS=ON \
+  -DLV_CONF_BUILD_DISABLE_DEMOS=OFF \
   -DLV_CONF_BUILD_DISABLE_THORVG_INTERNAL=ON
 
-cmake --build "${build_dir}" --target lvgl
+cmake --build "${build_dir}" --target lvgl lvgl_demos
 
 rm -rf "${dist_dir}"
 mkdir -p "${dist_dir}/include" "${dist_dir}/lib"
 
 cp "${build_dir}/lib/liblvgl.a" "${dist_dir}/lib/liblvgl.a"
+cp "${build_dir}/lib/liblvgl_demos.a" "${dist_dir}/lib/liblvgl_demos.a"
 cp "${source_dir}/lvgl.h" "${dist_dir}/include/lvgl.h"
 cp "${repo_root}/config/host_macos/lv_conf.h" "${dist_dir}/include/lv_conf.h"
 cp "${source_dir}/LICENCE.txt" "${dist_dir}/LVGL_LICENCE.txt"
@@ -54,7 +55,14 @@ find "${source_dir}/src" -type f -name '*.h' | while IFS= read -r header; do
   cp "${header}" "${dist_dir}/include/${relative_path}"
 done
 
+find "${source_dir}/demos" -type f -name '*.h' | while IFS= read -r header; do
+  relative_path="${header#${source_dir}/}"
+  mkdir -p "${dist_dir}/include/$(dirname "${relative_path}")"
+  cp "${header}" "${dist_dir}/include/${relative_path}"
+done
+
 lib_hash="$(shasum -a 256 "${dist_dir}/lib/liblvgl.a" | awk '{print $1}')"
+demo_lib_hash="$(shasum -a 256 "${dist_dir}/lib/liblvgl_demos.a" | awk '{print $1}')"
 conf_hash="$(shasum -a 256 "${dist_dir}/include/lv_conf.h" | awk '{print $1}')"
 toolchain="$(cc --version | head -1)"
 arch="$(uname -m)"
@@ -71,8 +79,10 @@ arch=${arch}
 sdl2.version=${sdl2_version}
 sdl2.cflags=${sdl2_cflags}
 sdl2.libs=${sdl2_libs}
+demo_widgets=enabled
 lv_conf_hash=${conf_hash}
 lib_hash=${lib_hash}
+demo_lib_hash=${demo_lib_hash}
 EOF
 
 echo "LVGL host macOS package generated at ${dist_dir}"
