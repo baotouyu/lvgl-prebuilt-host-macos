@@ -33,4 +33,24 @@ cc -std=c11 \
 
 "${tmp_dir}/verify_lvgl"
 
+sdl2_cflags="$(sdl2-config --cflags)"
+sdl2_libs="$(sdl2-config --libs)"
+sdl2_include_dir="$(sdl2-config --prefix)/include"
+sdl2_demo="${tmp_dir}/host_macos_sdl2_demo"
+
+cc -std=c11 \
+  -I"${dist_dir}/include" \
+  -I"${sdl2_include_dir}" \
+  ${sdl2_cflags} \
+  "${repo_root}/examples/host_macos_sdl2_demo.c" \
+  "${dist_dir}/lib/liblvgl.a" \
+  ${sdl2_libs} \
+  -o "${sdl2_demo}"
+
+if [ "${LVGL_RUN_SDL2_DEMO:-0}" = "1" ]; then
+  "${sdl2_demo}"
+else
+  echo "SDL2 LVGL demo compiled. Set LVGL_RUN_SDL2_DEMO=1 to run it locally."
+fi
+
 echo "LVGL host macOS package verified."

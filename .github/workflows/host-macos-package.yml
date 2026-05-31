@@ -11,6 +11,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install SDL2
+        run: brew install sdl2
+
       - name: Build LVGL package
         run: ./scripts/build_host_macos.sh
 
