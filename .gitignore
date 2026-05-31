@@ -1,0 +1,5 @@
+build/
+downloads/
+src/lvgl/
+*.tmp
+.DS_Store

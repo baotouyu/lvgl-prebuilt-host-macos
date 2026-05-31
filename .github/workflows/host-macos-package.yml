@@ -1,0 +1,18 @@
+name: host-macos-package
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-host-macos-package:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build LVGL package
+        run: ./scripts/build_host_macos.sh
+
+      - name: Verify LVGL package
+        run: ./scripts/verify_package.sh
