@@ -1,5 +1,6 @@
 build/
 downloads/
 src/lvgl/
+.worktrees/
 *.tmp
 .DS_Store
