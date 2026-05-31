@@ -19,6 +19,23 @@ def test_lv_conf_enables_sdl2_without_sdl_draw_backend():
     assert "#define LV_USE_DEMO_WIDGETS 1" in lv_conf
 
 
+def test_lv_conf_enables_local_file_image_and_font_assets():
+    lv_conf = (REPO_ROOT / "config/host_macos/lv_conf.h").read_text(encoding="utf-8")
+
+    assert "#define LV_USE_FS_STDIO 1" in lv_conf
+    assert "#define LV_FS_STDIO_LETTER 'A'" in lv_conf
+    assert '#define LV_FS_STDIO_PATH ""' in lv_conf
+    assert "#define LV_FS_STDIO_CACHE_SIZE 0" in lv_conf
+    assert "#define LV_USE_LODEPNG 1" in lv_conf
+    assert "#define LV_USE_TJPGD 1" in lv_conf
+    assert "#define LV_USE_BMP 1" in lv_conf
+    assert "#define LV_USE_TINY_TTF 1" in lv_conf
+    assert "#define LV_TINY_TTF_FILE_SUPPORT 1" in lv_conf
+    assert "#define LV_USE_LIBPNG 0" in lv_conf
+    assert "#define LV_USE_LIBJPEG_TURBO 0" in lv_conf
+    assert "#define LV_USE_FREETYPE 0" in lv_conf
+
+
 def test_cmake_wires_sdl2_config_into_lvgl_target():
     cmake = (REPO_ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
 
@@ -49,6 +66,9 @@ def test_build_script_requires_sdl2_and_writes_manifest_metadata():
     assert "cmake --build \"${build_dir}\" --target lvgl lvgl_demos" in script
     assert "cp \"${build_dir}/lib/liblvgl_demos.a\" \"${dist_dir}/lib/liblvgl_demos.a\"" in script
     assert "demo_widgets=enabled" in script
+    assert "local_assets=enabled" in script
+    assert "image_decoders=lodepng,tjpgd,bmp" in script
+    assert "font_loader=tiny_ttf_file" in script
     assert "demo_lib_hash=${demo_lib_hash}" in script
 
 
@@ -62,9 +82,12 @@ def test_package_exports_widgets_demo_library_headers_and_manifest():
     assert 'find "${source_dir}/demos" -type f -name' in script
     assert 'cp "${header}" "${dist_dir}/include/${relative_path}"' in script
     assert 'grep -q "demo_widgets=enabled" "${dist_dir}/lvgl_package.txt"' in verify
+    assert 'grep -q "local_assets=enabled" "${dist_dir}/lvgl_package.txt"' in verify
+    assert 'grep -q "image_decoders=lodepng,tjpgd,bmp" "${dist_dir}/lvgl_package.txt"' in verify
+    assert 'grep -q "font_loader=tiny_ttf_file" "${dist_dir}/lvgl_package.txt"' in verify
 
 
-def test_verify_script_compiles_sdl2_demo_and_runs_only_when_requested():
+def test_verify_script_compiles_resource_decoder_font_and_sdl2_demos():
     script = (REPO_ROOT / "scripts/verify_package.sh").read_text(encoding="utf-8")
 
     assert "examples/host_macos_sdl2_demo.c" in script
@@ -78,6 +101,16 @@ def test_verify_script_compiles_sdl2_demo_and_runs_only_when_requested():
     assert '#include "demos/widgets/lv_demo_widgets.h"' in script
     assert "(void)lv_demo_widgets;" in script
     assert '"${dist_dir}/lib/liblvgl_demos.a"' in script
+    assert "verify_local_assets.c" in script
+    assert '#include "src/libs/lodepng/lv_lodepng.h"' in script
+    assert '#include "src/libs/tjpgd/lv_tjpgd.h"' in script
+    assert '#include "src/libs/bmp/lv_bmp.h"' in script
+    assert '#include "src/libs/tiny_ttf/lv_tiny_ttf.h"' in script
+    assert "lv_lodepng_init();" in script
+    assert "lv_tjpgd_init();" in script
+    assert "lv_bmp_init();" in script
+    assert "lv_tiny_ttf_init();" in script
+    assert '(void)lv_tiny_ttf_create_file("A:/tmp/font.ttf", 16);' in script
 
 
 def test_sdl2_demo_uses_lvgl_sdl_window_input_and_label():
