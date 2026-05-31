@@ -23,7 +23,10 @@ def test_cmake_wires_sdl2_config_into_lvgl_target():
 
     assert "find_program(SDL2_CONFIG_EXECUTABLE sdl2-config REQUIRED)" in cmake
     assert "execute_process(COMMAND ${SDL2_CONFIG_EXECUTABLE} --cflags" in cmake
+    assert "execute_process(COMMAND ${SDL2_CONFIG_EXECUTABLE} --prefix" in cmake
     assert "separate_arguments(SDL2_CFLAGS_LIST NATIVE_COMMAND" in cmake
+    assert 'set(SDL2_INCLUDE_DIR "${SDL2_PREFIX}/include")' in cmake
+    assert 'target_include_directories(lvgl PRIVATE "${SDL2_INCLUDE_DIR}")' in cmake
     assert "target_compile_options(lvgl PRIVATE ${SDL2_CFLAGS_LIST})" in cmake
 
 
@@ -48,6 +51,8 @@ def test_verify_script_compiles_sdl2_demo_and_runs_only_when_requested():
     assert "examples/host_macos_sdl2_demo.c" in script
     assert "sdl2-config --cflags" in script
     assert "sdl2-config --libs" in script
+    assert 'sdl2_include_dir="$(sdl2-config --prefix)/include"' in script
+    assert '-I"${sdl2_include_dir}"' in script
     assert "LVGL_RUN_SDL2_DEMO" in script
     assert "host_macos_sdl2_demo" in script
 

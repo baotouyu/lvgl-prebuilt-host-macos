@@ -35,10 +35,12 @@ cc -std=c11 \
 
 sdl2_cflags="$(sdl2-config --cflags)"
 sdl2_libs="$(sdl2-config --libs)"
+sdl2_include_dir="$(sdl2-config --prefix)/include"
 sdl2_demo="${tmp_dir}/host_macos_sdl2_demo"
 
 cc -std=c11 \
   -I"${dist_dir}/include" \
+  -I"${sdl2_include_dir}" \
   ${sdl2_cflags} \
   "${repo_root}/examples/host_macos_sdl2_demo.c" \
   "${dist_dir}/lib/liblvgl.a" \
