@@ -67,18 +67,20 @@ cat > "${tmp_dir}/verify_local_assets.c" <<'EOF'
 
 int main(void)
 {
+    void (*png_decoder_init)(void) = lv_lodepng_init;
+    void (*jpg_decoder_init)(void) = lv_tjpgd_init;
+    void (*bmp_decoder_init)(void) = lv_bmp_init;
+    void (*tiny_ttf_init)(void) = lv_tiny_ttf_init;
+    lv_font_t * (*create_font_from_file)(const char *, int32_t) = lv_tiny_ttf_create_file;
+
     lv_init();
-    lv_lodepng_init();
-    lv_tjpgd_init();
-    lv_bmp_init();
-    lv_tiny_ttf_init();
 
-    (void)lv_tiny_ttf_create_file("A:/tmp/font.ttf", 16);
+    (void)png_decoder_init;
+    (void)jpg_decoder_init;
+    (void)bmp_decoder_init;
+    (void)tiny_ttf_init;
+    (void)create_font_from_file;
 
-    lv_tiny_ttf_deinit();
-    lv_bmp_deinit();
-    lv_tjpgd_deinit();
-    lv_lodepng_deinit();
     lv_deinit();
     return 0;
 }
@@ -89,6 +91,8 @@ cc -std=c11 \
   "${tmp_dir}/verify_local_assets.c" \
   "${dist_dir}/lib/liblvgl.a" \
   -o "${tmp_dir}/verify_local_assets"
+
+"${tmp_dir}/verify_local_assets"
 
 sdl2_cflags="$(sdl2-config --cflags)"
 sdl2_libs="$(sdl2-config --libs)"

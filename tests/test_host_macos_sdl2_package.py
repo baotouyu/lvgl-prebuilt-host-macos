@@ -106,11 +106,17 @@ def test_verify_script_compiles_resource_decoder_font_and_sdl2_demos():
     assert '#include "src/libs/tjpgd/lv_tjpgd.h"' in script
     assert '#include "src/libs/bmp/lv_bmp.h"' in script
     assert '#include "src/libs/tiny_ttf/lv_tiny_ttf.h"' in script
-    assert "lv_lodepng_init();" in script
-    assert "lv_tjpgd_init();" in script
-    assert "lv_bmp_init();" in script
-    assert "lv_tiny_ttf_init();" in script
-    assert '(void)lv_tiny_ttf_create_file("A:/tmp/font.ttf", 16);' in script
+    assert "void (*png_decoder_init)(void) = lv_lodepng_init;" in script
+    assert "void (*jpg_decoder_init)(void) = lv_tjpgd_init;" in script
+    assert "void (*bmp_decoder_init)(void) = lv_bmp_init;" in script
+    assert "void (*tiny_ttf_init)(void) = lv_tiny_ttf_init;" in script
+    assert "lv_font_t * (*create_font_from_file)(const char *, int32_t)" in script
+    assert "(void)png_decoder_init;" in script
+    assert "(void)jpg_decoder_init;" in script
+    assert "(void)bmp_decoder_init;" in script
+    assert "(void)tiny_ttf_init;" in script
+    assert "(void)create_font_from_file;" in script
+    assert '"${tmp_dir}/verify_local_assets"' in script
 
 
 def test_sdl2_demo_uses_lvgl_sdl_window_input_and_label():
