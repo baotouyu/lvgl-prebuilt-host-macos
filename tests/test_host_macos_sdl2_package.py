@@ -16,6 +16,7 @@ def test_lv_conf_enables_sdl2_without_sdl_draw_backend():
     assert "#define LV_SDL_DIRECT_EXIT 0" in lv_conf
     assert "#define LV_SDL_MOUSEWHEEL_MODE LV_SDL_MOUSEWHEEL_MODE_ENCODER" in lv_conf
     assert "#define LV_USE_DRAW_SDL 0" in lv_conf
+    assert "#define LV_USE_DEMO_WIDGETS 1" in lv_conf
 
 
 def test_cmake_wires_sdl2_config_into_lvgl_target():
@@ -28,6 +29,7 @@ def test_cmake_wires_sdl2_config_into_lvgl_target():
     assert 'set(SDL2_INCLUDE_DIR "${SDL2_PREFIX}/include")' in cmake
     assert 'target_include_directories(lvgl PRIVATE "${SDL2_INCLUDE_DIR}")' in cmake
     assert "target_compile_options(lvgl PRIVATE ${SDL2_CFLAGS_LIST})" in cmake
+    assert "set(LV_CONF_BUILD_DISABLE_DEMOS OFF CACHE BOOL" in cmake
 
 
 def test_build_script_requires_sdl2_and_writes_manifest_metadata():
@@ -43,6 +45,23 @@ def test_build_script_requires_sdl2_and_writes_manifest_metadata():
     assert "sdl2.version=${sdl2_version}" in script
     assert "sdl2.cflags=${sdl2_cflags}" in script
     assert "sdl2.libs=${sdl2_libs}" in script
+    assert "-DLV_CONF_BUILD_DISABLE_DEMOS=OFF" in script
+    assert "cmake --build \"${build_dir}\" --target lvgl lvgl_demos" in script
+    assert "cp \"${build_dir}/lib/liblvgl_demos.a\" \"${dist_dir}/lib/liblvgl_demos.a\"" in script
+    assert "demo_widgets=enabled" in script
+    assert "demo_lib_hash=${demo_lib_hash}" in script
+
+
+def test_package_exports_widgets_demo_library_headers_and_manifest():
+    script = (REPO_ROOT / "scripts/build_host_macos.sh").read_text(encoding="utf-8")
+    verify = (REPO_ROOT / "scripts/verify_package.sh").read_text(encoding="utf-8")
+
+    assert 'test -f "${dist_dir}/lib/liblvgl_demos.a"' in verify
+    assert 'test -f "${dist_dir}/include/demos/widgets/lv_demo_widgets.h"' in verify
+    assert 'test -f "${dist_dir}/include/demos/lv_demos.h"' in verify
+    assert 'find "${source_dir}/demos" -type f -name' in script
+    assert 'cp "${header}" "${dist_dir}/include/${relative_path}"' in script
+    assert 'grep -q "demo_widgets=enabled" "${dist_dir}/lvgl_package.txt"' in verify
 
 
 def test_verify_script_compiles_sdl2_demo_and_runs_only_when_requested():
@@ -55,6 +74,10 @@ def test_verify_script_compiles_sdl2_demo_and_runs_only_when_requested():
     assert '-I"${sdl2_include_dir}"' in script
     assert "LVGL_RUN_SDL2_DEMO" in script
     assert "host_macos_sdl2_demo" in script
+    assert "verify_widgets_demo.c" in script
+    assert '#include "demos/widgets/lv_demo_widgets.h"' in script
+    assert "(void)lv_demo_widgets;" in script
+    assert '"${dist_dir}/lib/liblvgl_demos.a"' in script
 
 
 def test_sdl2_demo_uses_lvgl_sdl_window_input_and_label():

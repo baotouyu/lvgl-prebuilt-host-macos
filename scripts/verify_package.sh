@@ -8,8 +8,12 @@ tmp_dir="${repo_root}/build/verify"
 test -f "${dist_dir}/include/lvgl.h"
 test -f "${dist_dir}/include/lv_conf.h"
 test -f "${dist_dir}/lib/liblvgl.a"
+test -f "${dist_dir}/lib/liblvgl_demos.a"
 test -f "${dist_dir}/LVGL_LICENCE.txt"
 test -f "${dist_dir}/lvgl_package.txt"
+test -f "${dist_dir}/include/demos/lv_demos.h"
+test -f "${dist_dir}/include/demos/widgets/lv_demo_widgets.h"
+grep -q "demo_widgets=enabled" "${dist_dir}/lvgl_package.txt"
 
 rm -rf "${tmp_dir}"
 mkdir -p "${tmp_dir}"
@@ -32,6 +36,24 @@ cc -std=c11 \
   -o "${tmp_dir}/verify_lvgl"
 
 "${tmp_dir}/verify_lvgl"
+
+cat > "${tmp_dir}/verify_widgets_demo.c" <<'EOF'
+#include "lvgl.h"
+#include "demos/widgets/lv_demo_widgets.h"
+
+int main(void)
+{
+    (void)lv_demo_widgets;
+    return 0;
+}
+EOF
+
+cc -std=c11 \
+  -I"${dist_dir}/include" \
+  "${tmp_dir}/verify_widgets_demo.c" \
+  "${dist_dir}/lib/liblvgl_demos.a" \
+  "${dist_dir}/lib/liblvgl.a" \
+  -o "${tmp_dir}/verify_widgets_demo"
 
 sdl2_cflags="$(sdl2-config --cflags)"
 sdl2_libs="$(sdl2-config --libs)"
